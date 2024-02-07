@@ -39,10 +39,7 @@ terminal.loadAddon(terminalFitAddon);
 window.editor = editor;
 window.terminal = terminal;
 
-editor.setValue(`#include <iostream>
-
-int main(void) {
-    std::cout << "hello world!\\n";
+editor.setValue(`float process() {
     return 0;
 }
 `);
@@ -142,6 +139,36 @@ async function main() {
     emception.onprocessstart = Comlink.proxy(onprocessstart);
     emception.onprocessend = Comlink.proxy(onprocessend);
 
+    function run(command) {
+        onprocessstart(`/emscripten/${command}`.split(/\s+/g))
+        terminal.write(`$ ${command}\n`)
+        return emception.run(command)
+    }
+
+    async function build(source) {
+        const reportSize = async () => terminal.write(`${(await emception.fileSystem.FS.stat("/working/main.wasm")).size} bytes\n`)
+
+        terminal.write("Compiling...\n")
+        await emception.fileSystem.writeFile("/working/main.c", source)
+        if ((await run("emcc -Oz -Wall --no-entry -sSUPPORT_ERRNO=0 -sSUPPORT_LONGJMP=0 -sEXPORTED_FUNCTIONS=_process -o main.wasm main.c")).returncode) return
+        await reportSize()
+
+        terminal.write("Stripping...\n")
+        let wat = (await emception._run_process(["/usr/bin/wasm-dis", "/working/main.wasm"])).stdout
+        wat = wat.split("\n").filter(line => !/^ *\(export "stack|_initialize|indirect_function_table/.test(line))
+            .map(line => line.replace(/^ *\(export "memory"/, '(export "m"').replace(/^ *\(export "title"/, '(export "d"').replace(/^ *\(export "setup"/, '(export "s"').replace(/^ *\(export "process"/, '(export "p"')).join("\n")
+        await emception.fileSystem.writeFile("/working/main.wat", wat)
+        await emception._run_process(["/usr/bin/wasm-as", "-all", "/working/main.wat", "-o", "/working/main.wasm"])
+        await reportSize()
+
+        terminal.write("Optimizing...\n")
+        await emception._run_process(["/usr/bin/wasm-opt", "-all", "-Oz", "/working/main.wasm", "-o", "/working/main.wasm"])
+        await emception._run_process(["/usr/bin/wasm-opt", "-all", "-Oz", "/working/main.wasm", "-o", "/working/main.wasm"])
+        await reportSize()
+
+        return emception.fileSystem.readFile("/working/main.wasm")
+    }
+
     const compile = document.getElementById("compile");
     compile.addEventListener("click", async () => {
         compile.disabled = true;
@@ -150,26 +177,21 @@ async function main() {
         preview(previewTemplate(spinner(80), "Compiling", ""));
         try {
             terminal.reset();
-            await emception.fileSystem.writeFile("/working/main.cpp", editor.getValue());
-            const cmd = `em++ ${flags.value} -sSINGLE_FILE=1 -sMINIFY_HTML=0 -sUSE_CLOSURE_COMPILER=0 main.cpp -o main.html`;
-            onprocessstart(`/emscripten/${cmd}`.split(/\s+/g));
-            terminal.write(`$ ${cmd}\n\n`);
-            const result = await emception.run(cmd);
-            terminal.write("\n");
-            if (result.returncode == 0) {
-                terminal.write("Emception compilation finished");
-                const content = await emception.fileSystem.readFile("/working/main.html", { encoding: "utf8" });
-                previewMiniBrowser(content);
+            const wasm = await build(editor.getValue());
+            if (wasm) {
+                const blob = new Blob([wasm], { type: "application/octet-stream" })
+                preview(previewTemplate(
+                    "Finished!", "",
+                    `Final size: ${wasm.byteLength}<br><a href="${window.URL.createObjectURL(blob)}" download="main.wasm"><button>Download</button></a>`
+                ))
             } else {
-                terminal.write(`Emception compilation failed`);
-                preview(previewTemplate("", "", "The compilation failed, check the output bellow"));
+                preview(previewTemplate("", "", "Compilation failed, check the output below"));
             }
-            terminal.write("\n");
         } catch (err) {
             preview(previewTemplate("", "", "Something went wrong, please file a bug report"));
             console.error(err);
         } finally {
-            status.textContent = "Iddle";
+            status.textContent = "Idle";
             statusElements.splice(0, statusElements.length);
             compile.textContent = "Compile!";
             compile.disabled = false;
