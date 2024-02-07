@@ -9,6 +9,8 @@ import { render, html } from "lit";
 import * as Comlink from "comlink";
 import EmceptionWorker from "./emception.worker.js";
 
+import { encodeBlob, decodeBlob } from "./base43.js"
+
 import "./style.css";
 import "xterm/css/xterm.css";
 
@@ -179,11 +181,7 @@ async function main() {
             terminal.reset();
             const wasm = await build(editor.getValue());
             if (wasm) {
-                const blob = new Blob([wasm], { type: "application/octet-stream" })
-                preview(previewTemplate(
-                    "Finished!", "",
-                    `Final size: ${wasm.byteLength}<br><a href="${window.URL.createObjectURL(blob)}" download="main.wasm"><button>Download</button></a>`
-                ))
+                frame.src = "https://ijc8.me/s?c=" + encodeBlob(wasm)
             } else {
                 preview(previewTemplate("", "", "Compilation failed, check the output below"));
             }
