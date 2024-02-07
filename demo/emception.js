@@ -20,6 +20,7 @@ const tools_info = {
     "/usr/bin/python":                   "python",
     "/usr/bin/wasm-as":                  "binaryen-box",
     "/usr/bin/wasm-ctor-eval":           "binaryen-box",
+    "/usr/bin/wasm-dis":                 "binaryen-box",
     "/usr/bin/wasm-emscripten-finalize": "binaryen-box",
     "/usr/bin/wasm-metadce":             "binaryen-box",
     "/usr/bin/wasm-opt":                 "binaryen-box",
