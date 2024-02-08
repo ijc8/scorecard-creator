@@ -52,6 +52,13 @@ CONTAINER_ID=$(docker create emscripten/emsdk:3.1.24)
 docker cp $CONTAINER_ID:/emsdk/upstream/emscripten/cache ./cache
 docker rm $CONTAINER_ID
 
+# Remove multithreading and worker (?) builds of libraries from sysroot
+rm \
+    ./cache/sysroot/lib/wasm32-emscripten/*-mt.a \
+    ./cache/sysroot/lib/wasm32-emscripten/*-mt-*.a \
+    ./cache/sysroot/lib/wasm32-emscripten/*-ww.a \
+    ./cache/sysroot/lib/wasm32-emscripten/*-ww-*.a
+
 popd
 
 node "$SRC/split_packages.js" | bash
