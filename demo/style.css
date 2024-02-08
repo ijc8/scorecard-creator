@@ -13,13 +13,13 @@ html, body {
 
 #layout {
     display: grid;
-    grid-template-columns: 1fr 10px 1fr;
+    grid-template-columns: 9fr 10px 4fr;
     grid-template-rows: 50px 1fr 10px 0.5fr auto;
     grid-template-areas:
         "header header header"
         "editor vgutter preview"
-        "hgutter hgutter hgutter"
-        "output output output";
+        "hgutter hgutter preview"
+        "output output preview";
 }
 
 #header {

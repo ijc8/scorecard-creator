@@ -58,8 +58,7 @@ async function main() {
     render(html`
         <div id="layout">
             <div id="header">
-                <div id="title">Emception</div>
-                <input id="flags" type="text"></input>
+                <div id="title">ScoreCard Creator</div>
                 <button disabled id="compile">Loading</button>
             </div>
             <div id="editor">${editorContainer}</div>
@@ -77,9 +76,6 @@ async function main() {
         </div>
     `, document.body);
 
-    const flags = document.getElementById("flags");
-    flags.value = "-O2 -fexceptions --proxy-to-worker -sEXIT_RUNTIME=1";
-    
     window.split = Split({
         onDrag: () => {
             editor.layout();
@@ -148,7 +144,11 @@ async function main() {
     }
 
     async function build(source) {
-        const reportSize = async () => terminal.write(`${(await emception.fileSystem.FS.stat("/working/main.wasm")).size} bytes\n`)
+        const reportSize = async () => {
+            const size = (await emception.fileSystem.FS.stat("/working/main.wasm")).size
+            terminal.write(`${size} bytes\n`)
+            return size
+        }
 
         terminal.write("Compiling...\n")
         await emception.fileSystem.writeFile("/working/main.c", source)
@@ -161,12 +161,17 @@ async function main() {
             .map(line => line.replace(/^ *\(export "memory"/, '(export "m"').replace(/^ *\(export "title"/, '(export "d"').replace(/^ *\(export "setup"/, '(export "s"').replace(/^ *\(export "process"/, '(export "p"')).join("\n")
         await emception.fileSystem.writeFile("/working/main.wat", wat)
         await emception._run_process(["/usr/bin/wasm-as", "-all", "/working/main.wat", "-o", "/working/main.wasm"])
-        await reportSize()
+        let size = await reportSize()
 
         terminal.write("Optimizing...\n")
+        // Run wasm-opt until size converges.
+        let oldSize
+        do {
+            await emception._run_process(["/usr/bin/wasm-opt", "-all", "-Oz", "/working/main.wasm", "-o", "/working/main.wasm"])
+            oldSize = size
+            size = await reportSize()
+        } while (size < oldSize)
         await emception._run_process(["/usr/bin/wasm-opt", "-all", "-Oz", "/working/main.wasm", "-o", "/working/main.wasm"])
-        await emception._run_process(["/usr/bin/wasm-opt", "-all", "-Oz", "/working/main.wasm", "-o", "/working/main.wasm"])
-        await reportSize()
 
         return emception.fileSystem.readFile("/working/main.wasm")
     }
