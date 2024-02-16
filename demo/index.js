@@ -9,7 +9,9 @@ import { render, html } from "lit";
 import * as Comlink from "comlink";
 import EmceptionWorker from "./emception.worker.js";
 
-import { encodeBlob, decodeBlob } from "./base43.js"
+import { encodeBlob } from "./base43.js"
+import deckHeader from "./deck.h"
+import exampleCode from "./arpeggios.c"
 
 import "./style.css";
 import "xterm/css/xterm.css";
@@ -41,10 +43,7 @@ terminal.loadAddon(terminalFitAddon);
 window.editor = editor;
 window.terminal = terminal;
 
-editor.setValue(`float process() {
-    return 0;
-}
-`);
+editor.setValue(exampleCode);
 
 emception.onstdout = Comlink.proxy((str) => terminal.write(str + "\n"));
 emception.onstderr = Comlink.proxy((str) => terminal.write(str + "\n"));
@@ -211,10 +210,11 @@ async function main() {
     status.textContent = "Loading...";
 
     await emception.init();
+    await emception.fileSystem.writeFile("/working/deck.h", deckHeader)
 
     terminal.reset();
     terminal.write("Emception is ready\n");
-    status.textContent = "Iddle";
+    status.textContent = "Idle";
     compile.disabled = false;
     compile.textContent = "Compile!";
     preview(previewTemplate("", "", "<div>Your compiled code will run here.</div><div>Click <div style=\"display: inline-block;border: 1px solid #858585;background: #454545;color: #cfcfcf;font-size: 15px;padding: 5px 10px;border-radius: 3px;\">Compile!</div> above to start.</div>"));

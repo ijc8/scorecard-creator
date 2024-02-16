@@ -58,6 +58,9 @@ module.exports = {
             test: /\.worker\.m?js$/,
             exclude: /monaco-editor/,
             use: ["worker-loader"],
+        }, {
+            test: /\.[ch]$/,
+            use: "raw-loader",
         }]
     },
     devServer: {
