@@ -28,7 +28,7 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            title: "Emception",
+            title: "ScoreCard Creator",
         }),
         new MonacoWebpackPlugin({ languages: ["cpp"] }),
         new CopyWebpackPlugin({
