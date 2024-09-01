@@ -58,6 +58,7 @@ async function main() {
         <div id="layout">
             <div id="header">
                 <div id="title">ScoreCard Creator</div>
+                <button id="save">Save</button>
                 <button disabled id="compile">Loading</button>
             </div>
             <div id="editor">${editorContainer}</div>
@@ -174,6 +175,19 @@ async function main() {
 
         return emception.fileSystem.readFile("/working/main.wasm")
     }
+
+    const save = document.getElementById("save")
+    save.addEventListener("click", () => {
+        const blob = new Blob([editor.getValue()])
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.style.display = "none"
+        a.href = url
+        a.download = "card.c"
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+    })
 
     const compile = document.getElementById("compile");
     compile.addEventListener("click", async () => {
