@@ -1,3 +1,16 @@
+# ScoreCard Creator
+
+Create [score cards](https://github.com/ijc8/scorecard) without leaving the comfort of your browser (or first installing the Emscripten SDK)!
+
+Score cards are tiny generative music programs small enough to fit in QR codes (and thus can be distributed as physical cards).
+These programs take the form of audio-generating WebAssembly binaries.
+So, to make score cards, we need to a way to compile source code into WebAssembly binaries (unless want to write WebAssembly by hand - which the [ScoreCard player](https://ijc8.me/s) already supports as-is ☺).
+
+ScoreCard Creator provides an editor and compiler that run in the browser, so that someone who wants to make a score card can dive in without fussing around with code editors and compiler toolchains. (This ability is quite useful when running [workshops](https://ijc8.me/nime2024)!)
+
+This application is based on the wonderful work of [jprendes](https://github.com/jprendes) on [Emception](https://github.com/jprendes/emception), which enables us to run Emscripten in the browser.
+The original Emception README follows.
+
 # Emception
 Compile C/C++ code with [Emscripten](https://emscripten.org/) in the browser.
 You can see it in action in the [live demo](https://jprendes.github.io/emception/).
