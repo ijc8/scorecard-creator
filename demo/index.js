@@ -231,7 +231,20 @@ async function main() {
     status.textContent = "Idle";
     compile.disabled = false;
     compile.textContent = "Compile!";
-    preview(previewTemplate("", "", "<div>Your compiled code will run here.</div><div>Click <div style=\"display: inline-block;border: 1px solid #858585;background: #454545;color: #cfcfcf;font-size: 15px;padding: 5px 10px;border-radius: 3px;\">Compile!</div> above to start.</div>"));
+    const previewText = `
+        <h2>Welcome to ScoreCard Creator!</h2>
+        <div style="text-align: left">
+            <p>ScoreCard Creator allows you to create <a href="https://github.com/ijc8/scorecard">score cards</a> without leaving the comfort of your browser (or first installing the Emscripten SDK)!</p>
+            <p>Score cards are tiny generative music programs small enough to fit in QR codes (and thus distributed as physical cards). These programs take the form of audio-generating WebAssembly binaries.</p>
+            <p>ScoreCard Creator provides an editor and compiler that run in the browser, so that you can make a score card without fussing with code editors and compiler toolchains.</p>
+            <p>It also includes <code>deck.h</code>, a small library of utilities for composing cards. You can see the contents of <code>deck.h</code> <a href="https://github.com/ijc8/scorecard/blob/main/examples/deck.h">here</a>.</p>
+            <p>A brief tutorial on how to write score cards is available <a href="https://ijc8.me/nime2024">here</a>.</p>
+            <p>This application is based on the wonderful work of <a href="https://github.com/jprendes">jprendes</a> on <a href="https://github.com/jprendes/emception">Emception</a>, which enables us to run Emscripten in the browser.</p>
+        </div>
+        <div style="font-weight: bold">Your compiled score card will appear here. Click <div style="display: inline-block;border: 1px solid #858585;background: #454545;color: #cfcfcf;font-size: 15px;padding: 5px 10px;border-radius: 3px;">Compile!</div> above to start.</div>
+        <div style="font-weight: bold">If you write something you like, make sure to click <div style="display: inline-block;border: 1px solid #858585;background: #454545;color: #cfcfcf;font-size: 15px;padding: 5px 10px;border-radius: 3px;">Save</div> to download your code.</div>
+    `
+    preview(previewTemplate("", "", previewText));
 }
 
 main();
